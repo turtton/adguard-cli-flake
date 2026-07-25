@@ -1,0 +1,35 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a4bc78e3cfb1bb5a3e2a00c01b04c2e0b # v4
+        with:
+          persist-credentials: false
+
+      - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41 # main
+      - uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
+
+      - name: Build
+        run: nix build .#adguard-cli
+
+      - name: Verify binary version matches hashes.json
+        run: |
+          VERSION="$(jq -r '.version' hashes.json)"
+          RESULT=$(./result/bin/adguard-cli --version 2>&1)
+          echo "Expected: $VERSION"
+          echo "Got: $RESULT"
+          test "$RESULT" = "$VERSION" || {
+            echo "Version mismatch!"
+            exit 1
+          }

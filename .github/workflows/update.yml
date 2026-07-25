@@ -1,0 +1,58 @@
+name: Auto-update
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a4bc78e3cfb1bb5a3e2a00c01b04c2e0b # v4
+        with:
+          persist-credentials: false
+
+      - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41 # main
+      - uses: DeterminateSystems/magic-nix-cache-action@87b14cf437d03d37989d87f0fa5ce4f5dc1a330b # v8
+
+      - name: Run update script
+        run: bash update.sh
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract version
+        id: version
+        if: steps.changes.outputs.changed == 'true'
+        run: echo "version=$(jq -r '.version' hashes.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        if: steps.changes.outputs.changed == 'true'
+        run: nix build .#adguard-cli
+
+      - name: Create PR
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@c66b8cb0050a39d19695bb3389f91c393c60f7f7 # v7
+        with:
+          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update adguard-cli to ${{ steps.version.outputs.version }}"
+          title: "chore: update adguard-cli to ${{ steps.version.outputs.version }}"
+          body: |
+            Auto-detected new version of adguard-cli.
+
+            - **Version**: ${{ steps.version.outputs.version }}
+            - **Source**: https://github.com/AdguardTeam/AdGuardCLI/releases
+
+            Built successfully; CI verifies the binary on pull_request.
+          branch: auto-update
+          delete-branch: true
