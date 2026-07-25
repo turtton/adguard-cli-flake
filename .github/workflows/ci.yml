@@ -26,7 +26,7 @@ jobs:
       - name: Verify binary version matches hashes.json
         run: |
           VERSION="$(jq -r '.version' hashes.json)"
-          RESULT=$(./result/bin/adguard-cli --version 2>&1)
+          RESULT=$(./result/bin/adguard-cli --version 2>&1 | grep -oP 'v\K[\d.]+' || echo "")
           echo "Expected: $VERSION"
           echo "Got: $RESULT"
           test "$RESULT" = "$VERSION" || {
