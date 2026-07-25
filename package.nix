@@ -22,8 +22,10 @@ stdenvNoCC.mkDerivation {
   pname = "adguard-cli";
   inherit version;
 
+  dontUnpack = true;
   dontConfigure = true;
   dontBuild = true;
+  dontFixup = true;
 
   installPhase = ''
     runHook preInstall
