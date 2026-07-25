@@ -2,6 +2,7 @@
   lib,
   stdenvNoCC,
   fetchurl,
+  bash,
 }:
 
 let
@@ -35,12 +36,32 @@ stdenvNoCC.mkDerivation {
     # Extract tarball (top-level dir has variable name, strip it)
     tar -xzf ${src} -C $out/share/adguard-cli --strip-components=1
 
+    # Fix hardcoded /bin/bash shebang (does not exist on NixOS)
+    substituteInPlace $out/share/adguard-cli/install_cert.sh \
+      --replace-fail '#!/bin/bash' '#!${bash}/bin/bash'
+    # Don't abort when no FHS system cert dir exists (NixOS);
+    # skip the system trust store and still install into browser profiles
+    patch -d $out/share/adguard-cli -p1 < ${./patches/install_cert-nixos.patch}
+    chmod +x $out/share/adguard-cli/install_cert.sh
+
     # Install helper tools
     for helper in adguard_cli_nm adguard_root_helper certutil; do
       if [ -f "$out/share/adguard-cli/$helper" ]; then
         chmod +x "$out/share/adguard-cli/$helper"
       fi
     done
+
+    # The root helper must be a SUID-root binary, which is impossible in the
+    # read-only Nix store. Keep the real binary under a hidden name and make
+    # the expected path a symlink to the NixOS security.wrappers location
+    # (provided by nixosModules.adguard-cli). On non-NixOS hosts the symlink
+    # dangles and automatic mode stays unavailable, as before.
+    if [ -f "$out/share/adguard-cli/adguard_root_helper" ]; then
+      mv $out/share/adguard-cli/adguard_root_helper \
+         $out/share/adguard-cli/.adguard_root_helper-real
+      ln -s /run/wrappers/bin/adguard_root_helper \
+         $out/share/adguard-cli/adguard_root_helper
+    fi
 
     # Shell completion
     if [ -f "$out/share/adguard-cli/bash-completion.sh" ]; then

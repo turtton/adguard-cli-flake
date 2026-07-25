@@ -1,0 +1,34 @@
+--- a/install_cert.sh
++++ b/install_cert.sh
+@@ -75,12 +75,15 @@
+ fi
+ if [[ ! -d "${SYSTEM_CERT_DIR}" ]]; then
+     echo "Don't know where to put the certificate. Please specify a directory path in SYSTEM_CERT_DIR."
+-    exit 1
+-fi
+-SYSTEM_CERT_PATH="${SYSTEM_CERT_DIR}/${CERT_NAME}.crt"
++    echo "Skipping system trust store installation."
++    echo "On NixOS, install the CA certificate declaratively via security.pki.certificateFiles."
++    SKIP_SYSTEM_CERT=1
++else
++    SYSTEM_CERT_PATH="${SYSTEM_CERT_DIR}/${CERT_NAME}.crt"
+ 
+-echo "SYSTEM_CERT_DIR: ${SYSTEM_CERT_DIR}"
+-echo "SYSTEM_CERT_PATH: ${SYSTEM_CERT_PATH}"
++    echo "SYSTEM_CERT_DIR: ${SYSTEM_CERT_DIR}"
++    echo "SYSTEM_CERT_PATH: ${SYSTEM_CERT_PATH}"
++fi
+ 
+ # Find certutil
+ CERTUTIL=$(command -v certutil || true)
+@@ -96,7 +99,9 @@
+ 
+ 
+ # Copy certificate to the system's trusted certificates directory, if not already there
+-if [ ! -f "${SYSTEM_CERT_PATH}" ]; then
++if [[ "${SKIP_SYSTEM_CERT:-0}" -eq 1 ]]; then
++    echo "Skipping system trust store update."
++elif [ ! -f "${SYSTEM_CERT_PATH}" ]; then
+     echo "Copying certificate to the system's trusted certificates directory..."
+     $sudo_command cp "${CERT_PATH}" "${SYSTEM_CERT_PATH}"
+     echo "Updating the system's trusted certificates..."

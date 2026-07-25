@@ -6,8 +6,9 @@ Nix flake for [AdGuard CLI](https://github.com/AdguardTeam/AdGuardCLI). Download
 
 | File | Purpose |
 |---|---|
-| `flake.nix` | Flake entrypoint — calls `package.nix` per system |
+| `flake.nix` | Flake entrypoint — calls `package.nix` per system; provides `nixosModules.adguard-cli` |
 | `package.nix` | Derivation — fetches tarball from URL in `hashes.json`, extracts and installs |
+| `patches/install_cert-nixos.patch` | Don't abort `install_cert.sh` when no FHS system cert dir exists (NixOS); skip system store, still configure browsers |
 | `hashes.json` | Version + per-system URL+SRI-hash map |
 | `update.sh` | Fetches latest release from GitHub API, re-hashes, writes `hashes.json` |
 | `.github/workflows/ci.yml` | PR/push CI: `nix build .#adguard-cli` — triggered on `pull_request` and `push` to `main` |
