@@ -1,17 +1,17 @@
 {
-  "version": "0.0.0",
+  "version": "1.4.13",
   "sources": {
     "x86_64-linux": {
       "url": "https://github.com/AdguardTeam/AdGuardCLI/releases/download/v1.4.13-release/adguard-cli-1.4.13-linux-x86_64.tar.gz",
-      "hash": "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+      "hash": "sha256-BXXJojl/wVN9nIITgR8NeYZ6eVPySB8+lne9Pwos+Iw="
     },
     "aarch64-linux": {
       "url": "https://github.com/AdguardTeam/AdGuardCLI/releases/download/v1.4.13-release/adguard-cli-1.4.13-linux-aarch64.tar.gz",
-      "hash": "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+      "hash": "sha256-YHrwPtg1Y9jUFioqPlye0NBdbVtzhA7EH7XFxXPQmkU="
     },
     "x86_64-darwin": {
       "url": "https://github.com/AdguardTeam/AdGuardCLI/releases/download/v1.4.13-release/adguard-cli-1.4.13-macos.tar.gz",
-      "hash": "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+      "hash": "sha256-f5F6pXRGlc58mvhw33IGGzOxfgfCM/H6ajgcn8FnUGU="
     }
   }
 }
